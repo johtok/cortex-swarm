@@ -74,6 +74,7 @@ class AgentPool:
         task_fn: Callable[[], Awaitable[Any]],
     ) -> Any:
         """Run a premium task, waiting for semaphore if needed."""
+        acquired = False
         async with self._lock:
             self._stats.queued_premium += 1
 
@@ -88,6 +89,7 @@ class AgentPool:
                 async with self._lock:
                     self._stats.queued_premium -= 1
                     self._stats.active_premium += 1
+                    acquired = True
 
                 logger.info(
                     "Premium agent %s started (active=%d/%d)",
@@ -99,16 +101,16 @@ class AgentPool:
                     async with self._lock:
                         self._stats.total_completed += 1
                     return result
-                except Exception:
+                except BaseException:
                     async with self._lock:
                         self._stats.total_failed += 1
                     raise
                 finally:
                     async with self._lock:
                         self._stats.active_premium -= 1
-        except Exception:
-            async with self._lock:
-                if self._stats.queued_premium > 0:
+        except BaseException:
+            if not acquired:
+                async with self._lock:
                     self._stats.queued_premium -= 1
             raise
 
@@ -118,8 +120,11 @@ class AgentPool:
         task_fn: Callable[[], Awaitable[Any]],
     ) -> Any:
         """Run a non-premium task without concurrency limits."""
-        model_info = get_model(model_id)
-        tier = model_info.tier
+        try:
+            model_info = get_model(model_id)
+            tier = model_info.tier
+        except KeyError:
+            tier = ModelTier.STANDARD
 
         async with self._lock:
             if tier == ModelTier.FREE:

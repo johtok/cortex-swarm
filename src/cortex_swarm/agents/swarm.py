@@ -85,7 +85,7 @@ class DroneSwarm:
         batch = SwarmBatchResult(total_tasks=len(tasks))
 
         for task, result in zip(tasks, results):
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
                 batch.results.append(SwarmResult(
                     task_id=task.id, output="", success=False, error=str(result),
                 ))

@@ -12,6 +12,14 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _normalize_label(label: str) -> str:
+    """Normalize a response label to canonical form 'Response X'."""
+    parts = label.strip().split()
+    if len(parts) == 2 and parts[0].lower() == "response":
+        return f"Response {parts[1].upper()}"
+    return label.strip()
+
+
 def parse_ranking(evaluation_text: str) -> list[str] | None:
     """Extract ordered ranking from evaluation text.
 
@@ -32,7 +40,7 @@ def parse_ranking(evaluation_text: str) -> list[str] | None:
     if not items:
         return None
 
-    return [item.strip() for item in items]
+    return [_normalize_label(item) for item in items]
 
 
 RankingResult = list[tuple[str, float]]
@@ -62,7 +70,7 @@ def aggregate_rankings(
 
     for _reviewer, ranked_labels in rankings.items():
         for position, label in enumerate(ranked_labels, start=1):
-            normalized = label.strip()
+            normalized = _normalize_label(label)
             if normalized not in label_ranks:
                 label_ranks[normalized] = []
             label_ranks[normalized].append(position)

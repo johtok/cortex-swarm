@@ -81,7 +81,20 @@ def load_config(config_path: Path | None = None) -> SwarmGlobalConfig:
     if config_path and config_path.exists():
         _apply_yaml(config, config_path)
 
+    _validate_config(config)
     return config
+
+
+def _validate_config(config: SwarmGlobalConfig) -> None:
+    """Validate configuration values are within sane ranges."""
+    if config.max_premium_concurrent < 1:
+        raise ValueError(f"max_premium_concurrent must be >= 1, got {config.max_premium_concurrent}")
+    if config.dag.max_retries < 0:
+        raise ValueError(f"dag.max_retries must be >= 0, got {config.dag.max_retries}")
+    if not (0.0 <= config.dag.compression_level <= 1.0):
+        raise ValueError(f"dag.compression_level must be in [0, 1], got {config.dag.compression_level}")
+    if config.swarm.max_parallel < 1:
+        raise ValueError(f"swarm.max_parallel must be >= 1, got {config.swarm.max_parallel}")
 
 
 def _apply_yaml(config: SwarmGlobalConfig, path: Path) -> None:

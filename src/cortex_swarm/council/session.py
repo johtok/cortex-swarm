@@ -141,7 +141,7 @@ class Council:
         )
 
         for (model_id, _), response in zip(tasks.items(), responses):
-            if isinstance(response, Exception):
+            if isinstance(response, BaseException):
                 logger.error("Stage 1 failed for %s: %s", model_id, response)
                 results[model_id] = f"[Error: {response}]"
             else:
@@ -187,7 +187,7 @@ class Council:
         )
 
         for (model_id, _), response in zip(tasks.items(), responses):
-            if isinstance(response, Exception):
+            if isinstance(response, BaseException):
                 logger.error("Stage 2 failed for %s: %s", model_id, response)
                 evaluations[model_id] = f"[Error: {response}]"
             else:

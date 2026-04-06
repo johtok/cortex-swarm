@@ -31,9 +31,10 @@ def topological_sort(nodes: list[DagNode]) -> list[DagNode]:
 
     for node in nodes:
         for dep in node.depends_on:
-            if dep in adjacency:
-                adjacency[dep].append(node.id)
-                in_degree[node.id] += 1
+            if dep not in node_map:
+                raise ValueError(f"Node '{node.id}' depends on unknown node '{dep}'")
+            adjacency[dep].append(node.id)
+            in_degree[node.id] += 1
 
     queue = [nid for nid, deg in in_degree.items() if deg == 0]
     result = []
@@ -121,11 +122,14 @@ class DagRunner:
     ) -> NodeResult:
         """Execute a node with retry and optional cascade escalation."""
         escalation_models = self._escalation_chain(model_id)
+        result: NodeResult | None = None
 
         for attempt in range(1 + self._max_retries):
-            current_model = model_id
-            if self._cascade and attempt > 0 and attempt < len(escalation_models):
-                current_model = escalation_models[attempt]
+            if self._cascade and attempt > 0:
+                idx = min(attempt, len(escalation_models) - 1)
+                current_model = escalation_models[idx]
+            else:
+                current_model = model_id
 
             result = await self._execute(current_model, prompt, node.id)
             if result.success:
@@ -136,7 +140,8 @@ class DagRunner:
                 node.id, attempt + 1, 1 + self._max_retries, current_model,
             )
 
-        return result  # return last attempt
+        assert result is not None, "max_retries must be >= 0"
+        return result
 
     @staticmethod
     def _default_model_for(activity_type: ActivityType) -> str:

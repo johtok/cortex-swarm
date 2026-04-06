@@ -51,7 +51,7 @@ COPILOT_MODELS: dict[str, ModelInfo] = {
     "gemini-3-flash": ModelInfo("gemini-3-flash", 0.33, None),
     "gpt-5.1-codex-mini": ModelInfo("gpt-5.1-codex-mini", 0.33, None),
     "gpt-5.4-mini": ModelInfo("gpt-5.4-mini", 0.33, None),
-    "grok-code-fast-1": ModelInfo("grok-code-fast-1", 0.25, None),
+    "grok-code-fast-1": ModelInfo("grok-code-fast-1", 0.25, 1),
 
     # --- STANDARD tier (multiplier = 1) ---
     "claude-sonnet-4": ModelInfo("claude-sonnet-4", 1, None),
