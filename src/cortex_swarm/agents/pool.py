@@ -139,7 +139,7 @@ class AgentPool:
             async with self._lock:
                 self._stats.total_completed += 1
             return result
-        except Exception:
+        except BaseException:
             async with self._lock:
                 self._stats.total_failed += 1
             raise

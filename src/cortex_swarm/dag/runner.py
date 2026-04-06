@@ -86,7 +86,24 @@ class DagRunner:
         dag_result = DagResult()
         node_outputs: dict[str, str] = {}
 
+        failed_nodes: set[str] = set()
+
         for node in sorted_nodes:
+            # Skip nodes whose dependencies failed
+            failed_deps = [d for d in node.depends_on if d in failed_nodes]
+            if failed_deps:
+                skip_result = NodeResult(
+                    node_id=node.id,
+                    output="",
+                    model_used="",
+                    success=False,
+                    error=f"Skipped: upstream dependency failed ({', '.join(failed_deps)})",
+                )
+                dag_result.add(skip_result)
+                failed_nodes.add(node.id)
+                logger.warning("Skipping node %s: dependencies %s failed", node.id, failed_deps)
+                continue
+
             # Gather upstream context
             upstream_parts = []
             for dep_id in node.depends_on:
@@ -113,7 +130,8 @@ class DagRunner:
             if result.success:
                 node_outputs[node.id] = result.output
             else:
-                logger.warning("Node %s failed, downstream nodes may be affected", node.id)
+                failed_nodes.add(node.id)
+                logger.warning("Node %s failed, downstream nodes will be skipped", node.id)
 
         return dag_result
 
@@ -131,7 +149,19 @@ class DagRunner:
             else:
                 current_model = model_id
 
-            result = await self._execute(current_model, prompt, node.id)
+            try:
+                result = await self._execute(current_model, prompt, node.id)
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                result = NodeResult(
+                    node_id=node.id,
+                    output="",
+                    model_used=current_model,
+                    success=False,
+                    error=str(exc),
+                )
+
             if result.success:
                 return result
 

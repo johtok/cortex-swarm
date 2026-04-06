@@ -98,7 +98,11 @@ class DroneSwarm:
                     batch.failed += 1
 
         if synthesize and batch.successful > 0:
-            batch.synthesis = await self._synthesize(batch)
+            try:
+                batch.synthesis = await self._synthesize(batch)
+            except Exception as exc:
+                logger.error("Swarm synthesis failed: %s", exc)
+                batch.synthesis = f"[Synthesis failed: {exc}]"
 
         logger.info(
             "Swarm complete: %d/%d successful", batch.successful, batch.total_tasks,

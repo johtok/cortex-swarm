@@ -88,7 +88,7 @@ cortex-swarm status
 
 ## ⚙️ Configuration
 
-Configuration lives in `configs/default.yaml`. Override with `--config`:
+Configuration lives in `src/cortex_swarm/default_config.yaml` (shipped with the package). Override with `--config`:
 
 ```yaml
 # Max concurrent premium agents (Opus 4.6, etc.)

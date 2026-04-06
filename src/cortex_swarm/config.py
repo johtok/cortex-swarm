@@ -72,8 +72,8 @@ def load_config(config_path: Path | None = None) -> SwarmGlobalConfig:
     """
     config = SwarmGlobalConfig()
 
-    # Load default config
-    default_path = Path(__file__).parent.parent.parent / "configs" / "default.yaml"
+    # Load default config (shipped inside the package)
+    default_path = Path(__file__).parent / "default_config.yaml"
     if default_path.exists():
         _apply_yaml(config, default_path)
 
