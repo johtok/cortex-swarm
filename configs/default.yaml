@@ -1,0 +1,50 @@
+# cortex-swarm default configuration
+
+# Maximum concurrent premium-tier agents (multiplier >= 3)
+max_premium_concurrent: 2
+
+# Default model for general tasks (used the most)
+default_model: claude-sonnet-4.6
+
+# Agent role overrides (uncomment to customize)
+# roles:
+#   oracle:
+#     model: claude-opus-4.6
+#   worker:
+#     model: claude-sonnet-4.6
+#   sage:
+#     model: gpt-5.4
+#   scout:
+#     model: claude-haiku-4.5
+#   drone:
+#     model: gpt-5-mini
+
+# Council configuration
+council:
+  members:
+    - gemini-2.5-pro
+    - claude-sonnet-4.6
+    - gpt-5.4
+    - grok-code-fast-1
+  chairman: claude-sonnet-4.6
+
+# Drone swarm configuration
+swarm:
+  model: gpt-5-mini
+  max_parallel: 20
+  synthesis_model: claude-sonnet-4.6
+
+# DAG execution settings
+dag:
+  compression_method: key_points   # none, extractive, key_points, summary
+  compression_level: 0.3
+  max_retries: 1
+  cascade_on_failure: true
+
+# Task complexity thresholds (tokens in prompt as rough heuristic)
+routing:
+  trivial_max_tokens: 500
+  simple_max_tokens: 2000
+  moderate_max_tokens: 10000
+  complex_max_tokens: 50000
+  # above complex_max_tokens → critical (uses oracle)
